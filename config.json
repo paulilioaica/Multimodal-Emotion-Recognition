@@ -1,0 +1,14 @@
+{
+  "exp_name": "test",
+
+  "path":"C:\\Users\\Paul\\Desktop\\FG2020\\dataset",
+  "lr" : 0.00001,
+  "train_size": 0.8,
+  "dev_size" : 0.2,
+  "epochs": 2,
+  "batch_size": 12,
+  "video":"videos",
+  "audio":"audio",
+  "eval_net_epoch": 1,
+  "save_net_epochs": 2
+}
