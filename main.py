@@ -6,9 +6,9 @@ import torch.optim as optim
 
 
 def run(config, train_dataset, val_dataset):
-    model = Classifier()
-
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model = Classifier().to(device)
+    print("Training on {}, batch_size is {}, lr is {}".format(device, config['batch_size'], config['lr']))
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=config['lr'])
 

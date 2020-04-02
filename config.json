@@ -1,7 +1,7 @@
 {
   "exp_name": "test",
 
-  "path":"C:\\Users\\Paul\\Desktop\\FG2020\\dataset",
+  "path":"./dataset",
   "lr" : 0.00001,
   "train_size": 0.8,
   "dev_size" : 0.2,
