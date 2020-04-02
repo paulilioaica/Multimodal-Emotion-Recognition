@@ -19,14 +19,13 @@ class Trainer:
         accuracy = []
         for idx, (video, audio, label) in enumerate(self.train_dataloader, 0):
             self.optimizer.zero_grad()
-            for j in range(video.shape[1]):
-                output = self.network(audio.to(self.device), video[:, j, :, :].float().unsqueeze(1).to(self.device))
-                loss = self.criterion(output, label.to(self.device))
-                predictions = torch.argmax(output, dim=1)
-                accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / (predictions.shape[0]))
-                loss.backward()
-                self.optimizer.step()
-                running_loss.append(loss.item())
+            output = self.network(audio.to(self.device), video.float().to(self.device))
+            loss = self.criterion(output, label.to(self.device))
+            predictions = torch.argmax(output, dim=1)
+            accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / (predictions.shape[0]))
+            loss.backward()
+            self.optimizer.step()
+            running_loss.append(loss.item())
         print("[TRAIN] Epoch {}/{}, Accuracy is {}, Loss is {}".format(epoch, total_epoch, np.mean(accuracy),
                                                                        np.mean(running_loss)))
         return np.mean(accuracy), np.mean(running_loss)
@@ -36,13 +35,12 @@ class Trainer:
         self.network.eval()
         accuracy = []
         for idx, (video, audio, label) in enumerate(self.eval_dataloader, 0):
-            for j in range(video.shape[1]):
-                output = self.network(audio.to(self.device), video[:, j, :, :].float().unsqueeze(1).to(self.device))
-                loss = self.criterion(output, label.to(self.device))
-                predictions = torch.argmax(output, dim=1)
-                accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / \
+            output = self.network(audio.to(self.device), video.float().to(self.device))
+            loss = self.criterion(output, label.to(self.device))
+            predictions = torch.argmax(output, dim=1)
+            accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / \
                             (predictions.shape[0]))
-                running_eval_loss.append(loss.item())
+            running_eval_loss.append(loss.item())
         print("[EVAL] Accuracy is {}, Loss is {}".format(np.mean(accuracy), np.mean(running_eval_loss)))
         return np.mean(accuracy), np.mean(running_eval_loss)
 

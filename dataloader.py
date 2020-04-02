@@ -25,7 +25,7 @@ class CremaD(Dataset):
 
     def __getitem__(self, item):
         video = np.load(self.videos[item])['arr_0']
-        audio = np.load(self.audio[item])['arr_0'][:,0]
+        audio = np.load(self.audio[item])['arr_0'][:, 0]
         video_frames_num = video.shape[0]
         video_idx = [int(round(i)) for i in np.linspace(0, video_frames_num - 1, num=20)]
         spectrogram = librosa.power_to_db(librosa.feature.melspectrogram(audio), ref=np.max)
@@ -35,5 +35,5 @@ class CremaD(Dataset):
             seq = video[video_idx]
             x = torch.zeros((seq.shape[0], seq.shape[1], seq.shape[2]))
             for i, pic in enumerate(seq):
-                x[i,:,:] = self.transforms(pic)
-            return x,  audio, label
+                x[i, :, :] = self.transforms(pic)
+            return x, audio, label

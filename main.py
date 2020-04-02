@@ -1,4 +1,4 @@
-from model import Classifier
+from new_model import Classifier
 import torch
 from trainer import Trainer
 from torch.utils.data import DataLoader
