@@ -19,8 +19,8 @@ global_acc = []
 global_loss = []
 bucket_accuracy = []
 
-trans_train = transforms.Compose([transforms.ToPILImage(), transforms.RandomHorizontalFlip(), transforms.Grayscale(num_output_channels=1), transforms.RandomPerspective(), transforms.ToTensor(), transforms.Normalize(mean=[0.5], std=[0.5])])
-trans_eval = transforms.Compose([transforms.ToPILImage(), transforms.Grayscale(num_output_channels=1), transforms.ToTensor(), transforms.Normalize(mean=[0.5], std=[0.5])])
+trans_train = transforms.Compose([transforms.ToPILImage(), transforms.RandomHorizontalFlip(), transforms.Grayscale(num_output_channels=1), transforms.RandomPerspective(), transforms.ToTensor(), transforms.Normalize(mean=[0.35], std=[0.35])])
+trans_eval = transforms.Compose([transforms.ToPILImage(), transforms.Grayscale(num_output_channels=1), transforms.ToTensor(), transforms.Normalize(mean=[0.4], std=[0.4])])
 for i in range(len(unique_individuals) - 1):
     test = sum([individuals[x] for x in [unique_individuals[i], unique_individuals[i+1]]], [])
     train =sum([individuals[x] for x in unique_individuals[:i] + unique_individuals[i+2:]], [])
