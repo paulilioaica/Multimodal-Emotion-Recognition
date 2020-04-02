@@ -31,7 +31,7 @@ class CremaD(Dataset):
         rand_n = random.uniform(0, 1)
         image = TF.to_pil_image(image)
         image = TF.to_grayscale(image)
-        if rand_n > 0.5:
+        if rand_n > 0.5 and self.transforms:
             image = TF.hflip(image)
             w, h = image.size
             start, end = transforms.RandomPerspective.get_params(w, h, 0.5)
