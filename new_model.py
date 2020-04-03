@@ -18,6 +18,8 @@ class Video(nn.Module):
     def __init__(self):
         super().__init__()
         self.network = nn.Sequential(*list(resnet18(pretrained=True).children())[:-2])
+        for params in self.network.parameters():
+            params.requires_grad = False
         self.linear = nn.Linear(in_features=25088, out_features=512)
 
     def forward(self, x):

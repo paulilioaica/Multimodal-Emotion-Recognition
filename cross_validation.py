@@ -12,7 +12,7 @@ unique_individuals = list(
     set([file.split(".")[0] for file in os.listdir(os.path.join(config['path'], config['video']))]))
 individuals = {individ: [file for file in os.listdir(os.path.join(config['path'], config['video'])) if individ in file.split(".")[0]]
                for individ in unique_individuals}
-
+print(individuals)
 total_size = len(individuals)
 print(len(unique_individuals))
 global_acc = []
