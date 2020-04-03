@@ -19,9 +19,6 @@ class Trainer:
         accuracy = []
         for idx, (video, audio, label) in enumerate(self.train_dataloader, 0):
             self.optimizer.zero_grad()
-            Image.fromarray(np.array(255*video[0,12,:,:])).show()
-            Image.fromarray(np.array(255*video[0,13,:,:])).show()
-            Image.fromarray(np.array(255*video[0,14,:,:])).show()
             output = self.network(audio.to(self.device), video.float().to(self.device))
             loss = self.criterion(output, label.to(self.device))
             predictions = torch.argmax(output, dim=1)

@@ -30,7 +30,7 @@ class CremaD(Dataset):
         random.seed(seed)
         rand_n = random.uniform(0, 1)
         image = TF.to_pil_image(image)
-        image = TF.to_grayscale(image)
+        image = TF.to_grayscale(image, num_output_channels=3)
         if rand_n > 0.5 and self.transforms:
             image = TF.hflip(image)
             w, h = image.size
@@ -41,9 +41,9 @@ class CremaD(Dataset):
         return image
 
     def transform(self, video, seed):
-        video_ret = torch.zeros((video.shape[0], video.shape[1], video.shape[2]))
+        video_ret = torch.zeros((video.shape[0], video.shape[3], video.shape[1], video.shape[2]))
         for i, pic in enumerate(video):
-            video_ret[i, :, :] = self.modify(pic, seed)
+            video_ret[i, :, :, :] = self.modify(pic, seed)
         return video_ret
 
     def __getitem__(self, item):

@@ -1,7 +1,7 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch
-
+from torchvision.models import resnet18
 
 class GRU(nn.Module):
     def __init__(self):
@@ -17,19 +17,8 @@ class GRU(nn.Module):
 class Video(nn.Module):
     def __init__(self):
         super().__init__()
-        self.network = nn.Sequential(nn.Conv2d(kernel_size=5, padding=0, in_channels=1, out_channels=16, stride=2),
-                                     nn.ReLU(),
-                                     nn.BatchNorm2d(num_features=16),
-                                     nn.MaxPool2d(kernel_size=2),
-                                     nn.Conv2d(kernel_size=5, padding=0, in_channels=16, out_channels=32),
-                                     nn.ReLU(),
-                                     nn.BatchNorm2d(num_features=32),
-                                     nn.MaxPool2d(kernel_size=2),
-                                     nn.Conv2d(kernel_size=5, padding=0, in_channels=32, out_channels=32),
-                                     nn.ReLU(),
-                                     nn.BatchNorm2d(num_features=32),
-                                     nn.MaxPool2d(kernel_size=2))
-        self.linear = nn.Linear(in_features=2880, out_features=512)
+        self.network = nn.Sequential(*list(resnet18(pretrained=True).children())[:-2])
+        self.linear = nn.Linear(in_features=25088, out_features=512)
 
     def forward(self, x):
         x = self.network(x)
@@ -67,9 +56,12 @@ class Classifier(nn.Module):
         self.linear = nn.Linear(in_features=256, out_features=7)
 
     def forward(self, audio, video_arr):
-        h = torch.zeros((video_arr.shape[0], 128))
+        if torch.cuda.is_available():
+            h = torch.zeros((video_arr.shape[0], 128)).cuda()
+        else:
+            h = torch.zeros((video_arr.shape[0], 128))
         for i in range(video_arr.shape[1]):
-            video_seq = self.video(video_arr[:, i, :, :].unsqueeze(1))
+            video_seq = self.video(video_arr[:, i, :, :])
             h = self.gru(video_seq, h)
         audio = self.audio(audio)
         x = torch.cat([audio, h], dim=1)
