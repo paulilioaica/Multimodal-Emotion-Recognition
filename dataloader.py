@@ -50,10 +50,8 @@ class CremaD(Dataset):
         seed = np.random.randint(2147483647)
         video = np.load(self.videos[item])['arr_0']
         audio = np.load(self.audio[item])['arr_0'][:, 0]
-        video_frames_num = video.shape[0]
-        video_idx = [int(round(i)) for i in np.linspace(0, video_frames_num - 1, num=20)]
         spectrogram = librosa.power_to_db(librosa.feature.melspectrogram(audio), ref=np.max)
         audio = np.array(Image.fromarray(spectrogram).resize((192, 120), Image.ANTIALIAS))[np.newaxis, :, :]
         label = int(self.videos[item].split('_')[0][-2])
-        video = self.transform(video[video_idx], seed)
+        video = self.transform(video, seed)
         return video, audio, label
