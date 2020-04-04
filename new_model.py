@@ -25,7 +25,7 @@ class Video(nn.Module):
     def forward(self, x):
         x = self.network(x)
         x = self.linear(x.reshape(x.shape[0], -1))
-        x = F.sigmoid(x)
+        x = F.relu(x)
         return x
 
 
@@ -45,7 +45,7 @@ class Audio(nn.Module):
     def forward(self, x):
         x = self.network(x)
         x = self.linear(x.reshape(x.shape[0], -1))
-        x = F.sigmoid(x)
+        x = F.relu(x)
         return x
 
 

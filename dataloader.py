@@ -21,7 +21,10 @@ class CremaD(Dataset):
         self.videos = sorted(
             [os.path.join(self.root_dir, self.video_dir, file) for file in self.k_fold_list if file.endswith(".npz")])
         self.audio = sorted(
-            [os.path.join(self.root_dir, self.audio_dir, file.split("_")[0]+"npz") for file in self.k_fold_list if file.endswith(".npz")])
+            [os.path.join(self.root_dir, self.audio_dir, file.split("_")[0] + "npz") for file in self.k_fold_list if
+             file.endswith(".npz")])
+        print(self.videos)
+        print(self.audio)
 
     def __len__(self):
         return len(self.videos)
@@ -30,14 +33,18 @@ class CremaD(Dataset):
         random.seed(seed)
         rand_n = random.uniform(0, 1)
         image = TF.to_pil_image(image)
-        image = TF.to_grayscale(image, num_output_channels=3)
         if rand_n > 0.5 and self.transforms:
             image = TF.hflip(image)
+            angle = transforms.RandomRotation.get_params((-20, 20))
+            image = TF.rotate(image, angle)
+        if rand_n > 0.3:
             w, h = image.size
-            start, end = transforms.RandomPerspective.get_params(w, h, 0.5)
+            start, end = transforms.RandomPerspective.get_params(w, h, 0.2)
             image = TF.perspective(image, start, end, interpolation=Image.BICUBIC)
+
         image = TF.to_tensor(image)
-        image = TF.normalize(image, mean=[0.35], std=[0.35])
+        mean = [image[i, :, :].mean() / 255 for i in range(3)]
+        image = TF.normalize(image, mean=mean, std=[1,1,1])
         return image
 
     def transform(self, video, seed):
@@ -50,8 +57,9 @@ class CremaD(Dataset):
         seed = np.random.randint(2147483647)
         video = np.load(self.videos[item])['arr_0']
         audio = np.load(self.audio[item])['arr_0'][:, 0]
-        spectrogram = librosa.power_to_db(librosa.feature.melspectrogram(audio), ref=np.max)
-        audio = np.array(Image.fromarray(spectrogram).resize((192, 120), Image.ANTIALIAS))[np.newaxis, :, :]
+        spectrogram = librosa.feature.melspectrogram(audio)
+        audio = Image.fromarray(spectrogram).resize((192, 120), Image.ANTIALIAS)
+        audio = np.array(audio)[np.newaxis, :, :]
         label = int(self.videos[item].split('_')[0][-2])
         video = self.transform(video, seed)
         return video, audio, label
