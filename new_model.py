@@ -1,13 +1,14 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models import resnet18
+from pretrained.resnet_face import resnet50_face_sfew_dag
+
 
 class GRU(nn.Module):
     def __init__(self):
         super().__init__()
-        self.hidden_size = 128
-        self.gru = nn.GRUCell(input_size=512, hidden_size=self.hidden_size)
+        self.hidden_size = 256
+        self.gru = nn.GRUCell(input_size=46592, hidden_size=self.hidden_size)
 
     def forward(self, x, h):
         x = self.gru(x, h)
@@ -17,16 +18,15 @@ class GRU(nn.Module):
 class Video(nn.Module):
     def __init__(self):
         super().__init__()
-        self.network = nn.Sequential(*list(resnet18(pretrained=True).children())[:-2])
+        self.network = resnet50_face_sfew_dag("./pretrained/resnet50_face_sfew_dag.pth")
         for params in self.network.parameters():
             params.requires_grad = False
         self.linear = nn.Linear(in_features=25088, out_features=512)
 
     def forward(self, x):
         x = self.network(x)
-        x = self.linear(x.reshape(x.shape[0], -1))
-        x = F.relu(x)
         return x
+
 
 
 class Audio(nn.Module):
@@ -55,15 +55,15 @@ class Classifier(nn.Module):
         self.video = Video()
         self.audio = Audio()
         self.gru = GRU()
-        self.linear = nn.Linear(in_features=256, out_features=7)
+        self.linear = nn.Linear(in_features=384, out_features=7)
 
     def forward(self, audio, video_arr):
         if torch.cuda.is_available():
-            h = torch.zeros((video_arr.shape[0], 128)).cuda()
+            h = torch.zeros((video_arr.shape[0], 256)).cuda()
         else:
-            h = torch.zeros((video_arr.shape[0], 128))
+            h = torch.zeros((video_arr.shape[0], 256))
         for i in range(video_arr.shape[1]):
-            video_seq = self.video(video_arr[:, i, :, :])
+            video_seq = self.video(video_arr[:, i, :, :]).reshape(video_arr.shape[0], -1)
             h = self.gru(video_seq, h)
         audio = self.audio(audio)
         x = torch.cat([audio, h], dim=1)

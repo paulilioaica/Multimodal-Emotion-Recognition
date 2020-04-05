@@ -56,20 +56,7 @@ class CremaD(Dataset):
         video = np.load(self.videos[item])['arr_0']
         audio = np.load(self.audio[item])['arr_0'][:, 0]
         spectrogram = librosa.feature.melspectrogram(audio)
-        video_frames_num = video.shape[0]
-        video_idx = [int(i) for i in
-                     np.clip(np.random.normal(loc=video_frames_num / 2, scale=video_frames_num / 6, size=20), 0,
-                             video_frames_num - 1)]
-        audio = Image.fromarray(spectrogram).resize((192, 120), Image.ANTIALIAS)
-        audio = np.array(audio)[np.newaxis, :, :]
-        label = int(self.videos[item].split('.')[-2])
-        if not self.transforms:
-            if item in self.eval_indx:
-                video = video[self.eval_indx[item]]
-            else:
-                self.eval_indx[item] = [int(i) for i in np.clip(np.random.normal(loc=video_frames_num / 2, scale=video_frames_num / 6, size=20),0, video_frames_num - 1)]
-                video = video[self.eval_indx[item]]
-        else:
-            video = video[video_idx]
+        audio = np.array(Image.fromarray(spectrogram).resize((192, 120), Image.ANTIALIAS))[np.newaxis, :, :]
+        label = int(self.videos[item].split('_')[0][-2])
         video = self.transform(video, seed)
         return video, audio, label
