@@ -16,15 +16,13 @@ class CremaD(Dataset):
         self.root_dir = root_dir
         self.k_fold_list = k_fold_list
         self.transforms = transforms
+        self.eval_indx = {}
         assert os.path.exists(os.path.join(self.root_dir, self.video_dir)), "Path to videos cannot be found"
         assert os.path.exists(os.path.join(self.root_dir, self.audio_dir)), "Path to audio files cannot be found"
         self.videos = sorted(
             [os.path.join(self.root_dir, self.video_dir, file) for file in self.k_fold_list if file.endswith(".npz")])
         self.audio = sorted(
-            [os.path.join(self.root_dir, self.audio_dir, file.split("_")[0] + "npz") for file in self.k_fold_list if
-             file.endswith(".npz")])
-        print(self.videos)
-        print(self.audio)
+            [os.path.join(self.root_dir, self.audio_dir, file) for file in self.k_fold_list if file.endswith(".npz")])
 
     def __len__(self):
         return len(self.videos)
@@ -44,7 +42,7 @@ class CremaD(Dataset):
 
         image = TF.to_tensor(image)
         mean = [image[i, :, :].mean() / 255 for i in range(3)]
-        image = TF.normalize(image, mean=mean, std=[1,1,1])
+        image = TF.normalize(image, mean=mean, std=[1, 1, 1])
         return image
 
     def transform(self, video, seed):
@@ -58,8 +56,20 @@ class CremaD(Dataset):
         video = np.load(self.videos[item])['arr_0']
         audio = np.load(self.audio[item])['arr_0'][:, 0]
         spectrogram = librosa.feature.melspectrogram(audio)
+        video_frames_num = video.shape[0]
+        video_idx = [int(i) for i in
+                     np.clip(np.random.normal(loc=video_frames_num / 2, scale=video_frames_num / 6, size=20), 0,
+                             video_frames_num - 1)]
         audio = Image.fromarray(spectrogram).resize((192, 120), Image.ANTIALIAS)
         audio = np.array(audio)[np.newaxis, :, :]
-        label = int(self.videos[item].split('_')[0][-2])
+        label = int(self.videos[item].split('.')[-2])
+        if not self.transforms:
+            if item in self.eval_indx:
+                video = video[self.eval_indx[item]]
+            else:
+                self.eval_indx[item] = [int(i) for i in np.clip(np.random.normal(loc=video_frames_num / 2, scale=video_frames_num / 6, size=20),0, video_frames_num - 1)]
+                video = video[self.eval_indx[item]]
+        else:
+            video = video[video_idx]
         video = self.transform(video, seed)
         return video, audio, label
