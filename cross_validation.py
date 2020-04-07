@@ -22,16 +22,16 @@ bucket_accuracy = []
 trans_train = transforms.Compose([transforms.ToPILImage(), transforms.RandomHorizontalFlip(), transforms.Grayscale(num_output_channels=1), transforms.RandomPerspective(), transforms.ToTensor(), transforms.Normalize(mean=[0.35], std=[0.35])])
 trans_eval = transforms.Compose([transforms.ToPILImage(), transforms.Grayscale(num_output_channels=1), transforms.ToTensor(), transforms.Normalize(mean=[0.4], std=[0.4])])
 test = sum([individuals[x] for x in ["F6", "M3"]], [])
-individuals.remove("F6")
-individuals.remove("M3")
+unique_individuals.remove("F6")
+unique_individuals.remove("M3")
 train =sum([individuals[x] for x in unique_individuals], [])
 
 shuffle(test)
 shuffle(train)
 
 
-train_dataset = CremaD(config['path'], config['audio'], config['video'], k_fold_list=train, transforms=True)
-val_dataset = CremaD(config['path'], config['audio'], config['video'], k_fold_list=test)
+train_dataset = CremaD(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=train, transforms=True)
+val_dataset = CremaD(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=test)
 train_acc, train_loss, val_acc, val_loss = run(config, train_dataset, val_dataset)
 bucket_accuracy.append([train_acc, train_loss, val_acc, val_loss])
 print("Tested on bucket number {}\n loss:\ntrain {}\ntest{} \n acc:\ntrain {}\ntest{}".format(i, train_loss, val_loss,

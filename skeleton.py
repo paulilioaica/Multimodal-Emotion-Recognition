@@ -1,3 +1,6 @@
+import os
+import time
+from PIL import ImageGrab
 import time
 
 import numpy as np
@@ -18,10 +21,14 @@ def read_file(str):
 
 
 class Joint:
-    def __init__(self, x ,y ,z):
+    def __init__(self, x ,y ,z, anglex, angley, anglez):
         self._x = x
         self._y = y
         self._z = z
+        self._anglex= anglex
+        self._angley= angley
+        self._anglez= anglez
+
 
 class Point:
     def __init__(self, name, x, y, z, id):
@@ -41,14 +48,9 @@ poi = []
 for i, point in enumerate(points):
     poi.append(Point(points[i], 0, 0, 0, i))
 
-
 class Skeleton:
-    """Kinect skeleton represented as a VPython frame.
-    """
 
     def __init__(self, f, file):
-        """Create a skeleton in the given VPython frame f.
-        """
         self.frame = f
         self.file = file
         self.joints = [sphere(frame=f, radius=0.05, color=color.yellow)
@@ -57,25 +59,28 @@ class Skeleton:
         self.bones = [cylinder(frame=f, radius=0.05, color=color.yellow)
                       for i in range(len(_bone_ids))]
 
-    def update(self):
-        """Update the skeleton joint positions in the depth sensor frame.
-        Return true iff the most recent sensor frame contained a tracked
-        skeleton.
-        """
-        updated = False
-        for slice in self.file[1:]:
-            time.sleep(0.01)
-            # Move the joints.
-            for joint, p in zip(self.joints, [Joint(float(slice[i]), float(slice[i+1]), -float(slice[i+2])) for i in indx.values()]):
-                joint.pos = p
+    def update(self, j):
+        slice = self.file[j]
+        for joint, p in zip(self.joints, [Joint(float(slice[i]), float(slice[i+1]), -float(slice[i+2]), float(slice[i+3]), float(slice[i+4]), float(slice[i+5])) for i in indx.values()]):
+            joint.pos = p
+            joint.rotate(p._anglex, axis=(vec(p._x, 0,0)))
+            joint.rotate(p._angley, axis=(vec(0, p._y, 0)))
+            joint.rotate(p._anglez, axis=(vec(0,0,p._z)))
 
-            # Move the bones.
-            for bone, bone_id in zip(self.bones, _bone_ids):
-                p1, p2 = [self.joints[id].pos for id in bone_id]
-                bone.pos = p1
-                bone.axis = p2 - p1
-            updated = True
-        return updated
+
+        # Move the bones.
+        for bone, bone_id in zip(self.bones, _bone_ids):
+            p1, p2 = [self.joints[id].pos for id in bone_id]
+            bone.pos = p1
+            bone.axis = p2 - p1
+    def delete(self):
+        for joint in self.joints:
+            joint.visible = False
+            del joint
+        for bone in self.bones:
+            bone.visible = False
+            del bone
+
 
 for i in range(len(points)):
     print("{}: {}".format(points[i], i))
@@ -86,7 +91,24 @@ _bone_ids = [[0, 1], [1, 2], [2, 4], [4, 6], [6, 8], [8, 10], [2, 5], [5, 7], [7
 # Initialize and level the Kinect sensor.
 
 if __name__ == '__main__':
-    skeleton = Skeleton(f=None,file=read_file(r"C:\Users\Paul\Desktop\FG2020\dataset\motion capture\F3.6.5.npz"))
-    while True:
-        rate(30)
-        skeleton.update()
+    f = canvas(title="Exp", width=300, height=300, center=vector(0, 0, -2.5), background=color.black)
+    for file in os.listdir(r"C:\Users\Paul\Desktop\FG2020\dataset\motion capture"):
+        image = None
+        print(file)
+        fl = read_file(os.path.join(r"C:\Users\Paul\Desktop\FG2020\dataset\motion capture",file))
+        skeleton = Skeleton(f=None, file=fl)
+        img = np.zeros((40, 200, 200, 3))
+        ii = [int(x) for x in np.linspace(2, fl.shape[0]-1, 40)]
+        pos = 0
+        for i in range(fl.shape[0]):
+            skeleton.update(i)
+            if i == 0:
+                time.sleep(1)
+            rate(24)
+            if i in ii:
+                prnt = ImageGrab.grab(bbox=(103,220,303, 420))
+                x = np.array(prnt, dtype=np.uint8)
+                img[pos] = x
+                pos += 1
+        np.savez(os.path.join(r"C:\Users\Paul\Desktop\Kinect", file), img)
+        skeleton.delete()

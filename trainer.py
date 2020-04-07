@@ -17,9 +17,9 @@ class Trainer:
     def train_epoch(self, epoch, total_epoch):
         running_loss = []
         accuracy = []
-        for idx, (video, audio, label) in enumerate(self.train_dataloader, 0):
+        for idx, (video, audio , kinect, label) in enumerate(self.train_dataloader, 0):
             self.optimizer.zero_grad()
-            output = self.network(audio.to(self.device), video.float().to(self.device))
+            output = self.network(audio.to(self.device), video.float().to(self.device), kinect.float().to(self.device))
             loss = self.criterion(output, label.to(self.device))
             predictions = torch.argmax(output, dim=1)
             accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / (predictions.shape[0]))
@@ -34,8 +34,8 @@ class Trainer:
         running_eval_loss = []
         self.network.eval()
         accuracy = []
-        for idx, (video, audio, label) in enumerate(self.eval_dataloader, 0):
-            output = self.network(audio.to(self.device), video.float().to(self.device))
+        for idx, (video, audio, kinect, label) in enumerate(self.eval_dataloader, 0):
+            output = self.network(audio.to(self.device), video.float().to(self.device), kinect.float().to(self.device))
             loss = self.criterion(output, label.to(self.device))
             predictions = torch.argmax(output, dim=1)
             accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / \
