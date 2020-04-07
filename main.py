@@ -1,4 +1,4 @@
-from model import Classifier
+from new_model import Classifier
 import torch
 from trainer import Trainer
 from torch.utils.data import DataLoader
@@ -10,7 +10,7 @@ def run(config, train_dataset, val_dataset):
     model = Classifier().to(device)
     print("Training on {}, batch_size is {}, lr is {}".format(device, config['batch_size'], config['lr']))
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=config['lr'])
+    optimizer = optim.Adam(model.parameters(), lr=config['lr'], weight_decay=0.5)
 
     train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], drop_last=True, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=config['batch_size'], drop_last=True, shuffle=True)

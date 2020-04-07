@@ -17,16 +17,15 @@ class Trainer:
     def train_epoch(self, epoch, total_epoch):
         running_loss = []
         accuracy = []
-        for idx, (video, audio, label) in enumerate(self.train_dataloader, 0):
+        for idx, (video, audio , kinect, label) in enumerate(self.train_dataloader, 0):
             self.optimizer.zero_grad()
-            for j in range(video.shape[1]):
-                output = self.network(audio.to(self.device), video[:, j, :, :].float().unsqueeze(1).to(self.device))
-                loss = self.criterion(output, label.to(self.device))
-                predictions = torch.argmax(output, dim=1)
-                accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / (predictions.shape[0]))
-                loss.backward()
-                self.optimizer.step()
-                running_loss.append(loss.item())
+            output = self.network(audio.to(self.device), video.float().to(self.device), kinect.float().to(self.device))
+            loss = self.criterion(output, label.to(self.device))
+            predictions = torch.argmax(output, dim=1)
+            accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / (predictions.shape[0]))
+            loss.backward()
+            self.optimizer.step()
+            running_loss.append(loss.item())
         print("[TRAIN] Epoch {}/{}, Accuracy is {}, Loss is {}".format(epoch, total_epoch, np.mean(accuracy),
                                                                        np.mean(running_loss)))
         return np.mean(accuracy), np.mean(running_loss)
@@ -35,14 +34,13 @@ class Trainer:
         running_eval_loss = []
         self.network.eval()
         accuracy = []
-        for idx, (video, audio, label) in enumerate(self.eval_dataloader, 0):
-            for j in range(video.shape[1]):
-                output = self.network(audio.to(self.device), video[:, j, :, :].float().unsqueeze(1).to(self.device))
-                loss = self.criterion(output, label.to(self.device))
-                predictions = torch.argmax(output, dim=1)
-                accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / \
+        for idx, (video, audio, kinect, label) in enumerate(self.eval_dataloader, 0):
+            output = self.network(audio.to(self.device), video.float().to(self.device), kinect.float().to(self.device))
+            loss = self.criterion(output, label.to(self.device))
+            predictions = torch.argmax(output, dim=1)
+            accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / \
                             (predictions.shape[0]))
-                running_eval_loss.append(loss.item())
+            running_eval_loss.append(loss.item())
         print("[EVAL] Accuracy is {}, Loss is {}".format(np.mean(accuracy), np.mean(running_eval_loss)))
         return np.mean(accuracy), np.mean(running_eval_loss)
 
