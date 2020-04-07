@@ -3,10 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.models import resnet18
 
+
 class GRU(nn.Module):
     def __init__(self):
         super().__init__()
-        self.hidden_size = 64
+        self.hidden_size = 128
         self.gru = nn.GRUCell(input_size=512, hidden_size=self.hidden_size)
 
     def forward(self, x, h):
@@ -52,13 +53,13 @@ class Classifier(nn.Module):
         self.video = Video()
         self.audio = Audio()
         self.gru = GRU()
-        self.linear = nn.Linear(in_features=384, out_features=7)
+        self.linear = nn.Linear(in_features=192, out_features=7)
 
     def forward(self, audio, video_arr):
         if torch.cuda.is_available():
-            h = torch.zeros((video_arr.shape[0], 64)).cuda()
+            h = torch.zeros((video_arr.shape[0], 128)).cuda()
         else:
-            h = torch.zeros((video_arr.shape[0], 64))
+            h = torch.zeros((video_arr.shape[0], 128))
         for i in range(video_arr.shape[1]):
             video_seq = self.video(video_arr[:, i, :, :])
             h = self.gru(video_seq, h)

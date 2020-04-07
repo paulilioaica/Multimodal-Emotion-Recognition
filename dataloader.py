@@ -22,7 +22,7 @@ class CremaD(Dataset):
         self.videos = sorted(
             [os.path.join(self.root_dir, self.video_dir, file) for file in self.k_fold_list if file.endswith(".npz")])
         self.audio = sorted(
-            [os.path.join(self.root_dir, self.audio_dir, file.split("_")[0] + "npz") for file in self.k_fold_list if
+            [os.path.join(self.root_dir, self.audio_dir, file.split("_")[0] + ".npz") for file in self.k_fold_list if
              file.endswith(".npz")])
 
     def __len__(self):
