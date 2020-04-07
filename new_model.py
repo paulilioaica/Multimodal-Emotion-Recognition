@@ -14,6 +14,26 @@ class GRU(nn.Module):
         x = self.gru(x, h)
         return x
 
+class Kinect_simple(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Conv2d(kernel_size=4, padding=0, in_channels=3, out_channels=8, stride=2, bias=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(num_features=8),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(kernel_size=4, padding=0, in_channels=8, out_channels=16, bias=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(num_features=16),
+            nn.MaxPool2d(kernel_size=2))
+        self.linear = nn.Linear(in_features=8464, out_features=512)
+    def forward(self, x):
+        x = self.network(x)
+        x = self.linear(x.reshape(x.shape[0], -1))
+        x = F.relu(x)
+        return x
+
+
 
 class Kinect(nn.Module):
     def __init__(self):
@@ -44,15 +64,15 @@ class Audio(nn.Module):
     def __init__(self):
         super().__init__()
         self.network = nn.Sequential(
-            nn.Conv2d(kernel_size=4, padding=0, in_channels=1, out_channels=8, stride=2, bias=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(num_features=8),
-            nn.MaxPool2d(kernel_size=2),
-            nn.Conv2d(kernel_size=4, padding=0, in_channels=8, out_channels=16, bias=1),
+            nn.Conv2d(kernel_size=4, padding=0, in_channels=1, out_channels=16, stride=2, bias=1),
             nn.ReLU(),
             nn.BatchNorm2d(num_features=16),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(kernel_size=4, padding=0, in_channels=16, out_channels=8, bias=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(num_features=8),
             nn.MaxPool2d(kernel_size=2))
-        self.linear = nn.Linear(in_features=4576, out_features=128)
+        self.linear = nn.Linear(in_features=2288, out_features=128)
 
     def forward(self, x):
         x = self.network(x)
@@ -68,7 +88,7 @@ class Classifier(nn.Module):
         self.audio = Audio()
         self.gru_video = GRU()
         self.gru_kinect = GRU()
-        self.kinect = Kinect()
+        self.kinect = Kinect_simple()
         self.linear = nn.Linear(in_features=384, out_features=7)
 
     def forward(self, audio, video_arr, motion_arr):
