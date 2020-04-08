@@ -7,8 +7,8 @@ from torchvision.models import resnet18
 class GRU(nn.Module):
     def __init__(self):
         super().__init__()
-        self.hidden_size = 128
-        self.gru = nn.GRUCell(input_size=512, hidden_size=self.hidden_size)
+        self.hidden_size = 1024
+        self.gru = nn.GRUCell(input_size=1024+128, hidden_size=self.hidden_size)
 
     def forward(self, x, h):
         x = self.gru(x, h)
@@ -41,14 +41,6 @@ class Video(nn.Module):
         return x.reshape(x.shape[0], -1)
 
 
-class Attention(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.linear = nn.Linear(in_features=384, out_features=384)
-    def forward(self, x):
-        x = self.linear(x)
-        return F.softmax(x)
-
 
 class Audio(nn.Module):
     def __init__(self):
@@ -75,28 +67,22 @@ class Classifier(nn.Module):
     def __init__(self):
         super().__init__()
         self.video = Video()
+        self.gru = GRU()
         self.audio = Audio()
-        self.gru_video = GRU()
-        self.gru_kinect = GRU()
         self.kinect = Kinect()
-        self.linear = nn.Linear(in_features=384, out_features=7)
+        self.linear = nn.Linear(in_features=1024, out_features=7)
 
     def forward(self, audio, video_arr, motion_arr):
         if torch.cuda.is_available():
-            h_video = torch.zeros((video_arr.shape[0], self.gru_video.hidden_size)).cuda()
-            h_kinect = torch.zeros((video_arr.shape[0], self.gru.hidden_size)).cuda()
+            h = torch.zeros((video_arr.shape[0], self.gru.hidden_size)).cuda()
         else:
-            h_video = torch.zeros((video_arr.shape[0], self.gru_video.hidden_size))
-            h_kinect = torch.zeros((video_arr.shape[0], self.gru_kinect.hidden_size))
-        for i in range(video_arr.shape[1]):
-            video_seq = self.video(video_arr[:, i, :, :])
-            h_video = self.gru_video(video_seq, h_video)
-        for i in range(motion_arr.shape[1]):
-            kinect_seq = self.kinect(motion_arr[:, i, :, :].transpose(1,3))
-            h_kinect = self.gru_kinect(kinect_seq, h_kinect)
+            h = torch.zeros((video_arr.shape[0], self.gru.hidden_size))
         audio = self.audio(audio)
-        x = torch.cat([audio, h_video, h_kinect], dim=1)
-        weights = self.attn(x)
-        x = x * weights
-        x = self.linear(x)
+        for i in range(motion_arr.shape[1]):
+            video_seq = self.video(video_arr[:, int(i/2), :, :])
+            kinect_seq = self.kinect(motion_arr[:, i, :, :].transpose(1,3))
+            x = torch.cat([audio, video_seq, kinect_seq], dim=1)
+            h = self.gru(x, h)
+
+        x = self.linear(h)
         return x
