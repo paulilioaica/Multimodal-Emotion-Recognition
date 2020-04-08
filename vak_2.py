@@ -1,7 +1,10 @@
+import itertools
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.models import resnet18
+import numpy as np
 
 
 class GRU(nn.Module):
@@ -55,6 +58,7 @@ class Audio(nn.Module):
             nn.BatchNorm2d(num_features=8),
             nn.MaxPool2d(kernel_size=2))
         self.linear = nn.Linear(in_features=2288, out_features=128)
+        self.linear.requires_grad=False
 
     def forward(self, x):
         x = self.network(x)
@@ -71,6 +75,7 @@ class Classifier(nn.Module):
         self.audio = Audio()
         self.kinect = Kinect()
         self.linear = nn.Linear(in_features=1024, out_features=7)
+        self.combo = list(itertools.product([i for i in range(40)],[i for i in range(20)]))
 
     def forward(self, audio, video_arr, motion_arr):
         if torch.cuda.is_available():
@@ -78,9 +83,14 @@ class Classifier(nn.Module):
         else:
             h = torch.zeros((video_arr.shape[0], self.gru.hidden_size))
         audio = self.audio(audio)
-        for i in range(motion_arr.shape[1]):
-            video_seq = self.video(video_arr[:, int(i/2), :, :])
-            kinect_seq = self.kinect(motion_arr[:, i, :, :].transpose(1,3))
+        for i in range(motion_arr.shape[1]*2):
+            if np.random.uniform(0,1) > 0.5:
+                j,k = self.combo[np.random.randint(0, len(self.combo)-1)]
+                video_seq = self.video(video_arr[:, k, :, :])
+                kinect_seq = self.kinect(motion_arr[:, j, :, :].transpose(1,3))
+            else:
+                video_seq = self.video(video_arr[:, int(i / 4), :, :])
+                kinect_seq = self.kinect(motion_arr[:, int(i/2), :, :].transpose(1,3))
             x = torch.cat([audio, video_seq, kinect_seq], dim=1)
             h = self.gru(x, h)
 
