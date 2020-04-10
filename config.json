@@ -1,12 +1,12 @@
 {
   "exp_name": "test",
 
-  "path":"C:\\Users\\Paul\\Desktop\\FG2020\\dataset",
+  "path":"../dataset",
   "lr" : 0.0001,
   "train_size": 0.8,
   "dev_size" : 0.2,
-  "epochs": 2,
-  "batch_size": 2,
+  "epochs": 120,
+  "batch_size": 20,
   "video":"videos",
   "audio":"audio",
   "kinect": "motion capture",
