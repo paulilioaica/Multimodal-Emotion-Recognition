@@ -62,7 +62,7 @@ class CremaD(Dataset):
         audio = np.load(self.audio[item])['arr_0'][:, 0]
         kinect = np.load(self.kinect[item])['arr_0']
         spectrogram = librosa.feature.melspectrogram(audio)
-        audio = np.array(Image.fromarray(spectrogram).resize((192, 120), Image.ANTIALIAS))[np.newaxis, :, :]
+        audio = np.array(Image.fromarray(spectrogram).resize((100,150), Image.ANTIALIAS))[np.newaxis, :]
         label = int(self.videos[item].split('_')[0][-1])
         video = self.transform(video, seed)
         return video, audio, kinect, label
