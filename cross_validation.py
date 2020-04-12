@@ -29,8 +29,9 @@ bucket_accuracy = []
 
 for duo in test:
     test = sum([individuals[x] for x in duo], [])
-    aux = [x for x in individuals if x not in duo]
+    aux = [x for x in pool if x not in duo]
     train = sum([individuals[x] for x in aux], [])
+
 
     train_dataset = CremaD(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=train,
                            transforms=True)
