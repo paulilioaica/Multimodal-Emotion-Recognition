@@ -10,32 +10,36 @@ with open('config.json', 'r') as f:
 
 unique_individuals = list(
     set([file.split(".")[0] for file in os.listdir(os.path.join(config['path'], config['video']))]))
-individuals = {individ: [file for file in os.listdir(os.path.join(config['path'], config['video'])) if individ in file.split(".")[0]]
+individuals = {individ: [file for file in os.listdir(os.path.join(config['path'], config['video'])) if
+                         individ in file.split(".")[0]]
                for individ in unique_individuals}
-print(individuals)
+forb = {"F5", "F3", "M5"}
+
+males = [x for x in individuals if "M" in x and x not in forb]
+females = [x for x in individuals if "F" in x and x not in forb]
+test = [(M, F) for M, F in zip(males, females)]
+pool = males + females
+
+
 total_size = len(individuals)
 print(len(unique_individuals))
 global_acc = []
 global_loss = []
 bucket_accuracy = []
 
-trans_train = transforms.Compose([transforms.ToPILImage(), transforms.RandomHorizontalFlip(), transforms.Grayscale(num_output_channels=1), transforms.RandomPerspective(), transforms.ToTensor(), transforms.Normalize(mean=[0.35], std=[0.35])])
-trans_eval = transforms.Compose([transforms.ToPILImage(), transforms.Grayscale(num_output_channels=1), transforms.ToTensor(), transforms.Normalize(mean=[0.4], std=[0.4])])
-test = sum([individuals[x] for x in ["F6", "M3"]], [])
-unique_individuals.remove("F6")
-unique_individuals.remove("M3")
-train =sum([individuals[x] for x in unique_individuals], [])
+for duo in test:
+    test = sum([individuals[x] for x in duo], [])
+    aux = [x for x in individuals if x not in duo]
+    train = sum([individuals[x] for x in aux], [])
 
-shuffle(test)
-shuffle(train)
-
-
-train_dataset = CremaD(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=train, transforms=True)
-val_dataset = CremaD(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=test)
-train_acc, train_loss, val_acc, val_loss = run(config, train_dataset, val_dataset)
-bucket_accuracy.append([train_acc, train_loss, val_acc, val_loss])
-print("Tested on bucket number {}\n loss:\ntrain {}\ntest{} \n acc:\ntrain {}\ntest{}".format(i, train_loss, val_loss,
-                                                                                               train_acc, val_acc))
+    train_dataset = CremaD(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=train,
+                           transforms=True)
+    val_dataset = CremaD(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=test)
+    train_acc, train_loss, val_acc, val_loss = run(config, train_dataset, val_dataset)
+    bucket_accuracy.append([train_acc, train_loss, val_acc, val_loss])
+    print(
+        "Tested on bucket number {}\n loss:\ntrain {}\ntest{} \n acc:\ntrain {}\ntest{}".format(i, train_loss, val_loss,
+                                                                                                train_acc, val_acc))
 
 #
 #
