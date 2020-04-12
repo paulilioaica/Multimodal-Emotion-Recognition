@@ -29,12 +29,10 @@ global_acc = []
 global_loss = []
 bucket_accuracy = []
 
-for duo in test:
+for i, duo in enumerate(test):
     test = sum([individuals[x] for x in duo], [])
     aux = [x for x in pool if x not in duo]
     train = sum([individuals[x] for x in aux], [])
-
-
     train_dataset = CremaD(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=train,
                            transforms=True)
     val_dataset = CremaD(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=test)
