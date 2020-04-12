@@ -17,6 +17,8 @@ forb = {"F5", "F3", "M5"}
 
 males = [x for x in individuals if "M" in x and x not in forb]
 females = [x for x in individuals if "F" in x and x not in forb]
+shuffle(males)
+shuffle(females)
 test = [(M, F) for M, F in zip(males, females)]
 pool = males + females
 
