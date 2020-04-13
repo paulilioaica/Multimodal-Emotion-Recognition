@@ -18,6 +18,8 @@ class Resnet():
     def __init__(self):
         super().__init__()
         self.network = nn.Sequential(*list(resnet18(pretrained=True).children())[:-1])
+        for params in self.network.parameters():
+            params.requires_grad = False
 
 
 class Kinect(nn.Module):
@@ -34,7 +36,6 @@ class Video(nn.Module):
     def __init__(self):
         super().__init__()
         self.network = Resnet().network
-        self.network.eval()
 
     def forward(self, x):
         x = self.network(x)
@@ -76,7 +77,7 @@ class Classifier(nn.Module):
             h = torch.rand((video_arr.shape[0], self.lstm.hidden_size)).cuda()
             c = torch.rand((video_arr.shape[0], self.lstm.hidden_size)).cuda()
         else:
-            h = torch.zeros((video_arr.shape[0], self.lstm.hidden_size))
+            h = torch.rand((video_arr.shape[0], self.lstm.hidden_size))
             c = torch.rand((video_arr.shape[0], self.lstm.hidden_size))
         audio = self.audio(audio)
         for i in range(motion_arr.shape[1]):

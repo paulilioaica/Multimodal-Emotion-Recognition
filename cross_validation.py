@@ -13,23 +13,25 @@ unique_individuals = list(
 individuals = {individ: [file for file in os.listdir(os.path.join(config['path'], config['video'])) if
                          individ in file.split(".")[0]]
                for individ in unique_individuals}
-forb = {"F5", "F3", "M5"}
+forb = {"M5","F5", "F3"}
 
 males = [x for x in individuals if "M" in x and x not in forb]
-females = [x for x in individuals if "F" in x and x not in forb]
+females = [x for x in individuals if "F6" in x and x not in forb]
 shuffle(males)
 shuffle(females)
-test = [(M, F) for M, F in zip(males, females)]
+test = sorted([(i, j) for i in males for j in females])
 pool = males + females
-
-
+print(test)
+exit()
 total_size = len(individuals)
-print(len(unique_individuals))
+print(len(pool))
+print(len(test))
 global_acc = []
 global_loss = []
 bucket_accuracy = []
 
 for i, duo in enumerate(test):
+    print(duo)
     test = sum([individuals[x] for x in duo], [])
     aux = [x for x in pool if x not in duo]
     train = sum([individuals[x] for x in aux], [])
