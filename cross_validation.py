@@ -21,11 +21,7 @@ shuffle(males)
 shuffle(females)
 test = [("M6", "F6")]
 pool = males + females
-print(test)
-exit()
 total_size = len(individuals)
-print(len(pool))
-print(len(test))
 global_acc = []
 global_loss = []
 bucket_accuracy = []

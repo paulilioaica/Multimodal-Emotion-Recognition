@@ -14,6 +14,7 @@ class LSTM(nn.Module):
         x = self.gru(x, h)
         return x
 
+
 class Resnet():
     def __init__(self):
         super().__init__()
@@ -81,8 +82,8 @@ class Classifier(nn.Module):
             c = torch.rand((video_arr.shape[0], self.lstm.hidden_size))
         audio = self.audio(audio)
         for i in range(motion_arr.shape[1]):
-            video_seq = self.video(video_arr[:, int(i/2), :, :])
-            kinect_seq = self.kinect(motion_arr[:,i, :, :].transpose(1, 3))
+            video_seq = self.video(video_arr[:, int(i / 2), :, :])
+            kinect_seq = self.kinect(motion_arr[:, i, :, :].transpose(1, 3))
             x = torch.cat([audio, video_seq, kinect_seq], dim=1)
             h, c = self.lstm(x, (h, c))
         x = self.linear(h)

@@ -11,7 +11,7 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTMCell(input_size=512, hidden_size=self.hidden_size)
 
     def forward(self, x, h):
-        x = self.gru(x, h)
+        x = self.lstm(x, h)
         return x
 
 
@@ -39,16 +39,6 @@ class Video(nn.Module):
         return x.reshape(x.shape[0], -1)
 
 
-class Attention(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.linear = nn.Linear(in_features=384, out_features=384)
-
-    def forward(self, x):
-        x = self.linear(x)
-        return F.softmax(x)
-
-
 class Audio(nn.Module):
     def __init__(self):
         super().__init__()
@@ -61,7 +51,7 @@ class Audio(nn.Module):
             nn.ReLU(),
             nn.BatchNorm2d(num_features=8),
             nn.MaxPool2d(kernel_size=2))
-        self.linear = nn.Linear(in_features=2288, out_features=128)
+        self.linear = nn.Linear(in_features=1360, out_features=128)
 
     def forward(self, x):
         x = self.network(x)

@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from PIL import Image
+from analytics import Confusion
 
 
 class Trainer:
@@ -9,6 +9,7 @@ class Trainer:
         self.device = device
         self.config = config
         self.network = network
+        self.confusion = Confusion((7, 7))
         self.train_dataloader = train_dataloader
         self.eval_dataloader = eval_dataloader
         self.criterion = criterion
@@ -17,12 +18,13 @@ class Trainer:
     def train_epoch(self, epoch, total_epoch):
         running_loss = []
         accuracy = []
-        for idx, (video, audio , kinect, label) in enumerate(self.train_dataloader, 0):
+        for idx, (video, audio, kinect, label) in enumerate(self.train_dataloader, 0):
             self.optimizer.zero_grad()
             output = self.network(audio.to(self.device), video.float().to(self.device), kinect.float().to(self.device))
             loss = self.criterion(output, label.to(self.device))
             predictions = torch.argmax(output, dim=1)
-            accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / (predictions.shape[0]))
+            accuracy.append(
+                sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / (predictions.shape[0]))
             loss.backward()
             self.optimizer.step()
             running_loss.append(loss.item())
@@ -37,6 +39,7 @@ class Trainer:
         for idx, (video, audio, kinect, label) in enumerate(self.eval_dataloader, 0):
             output = self.network(audio.to(self.device), video.float().to(self.device), kinect.float().to(self.device))
             loss = self.criterion(output, label.to(self.device))
+            self.confusion.update(output, label)
             predictions = torch.argmax(output, dim=1)
             accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / \
                             (predictions.shape[0]))
