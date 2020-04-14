@@ -16,10 +16,10 @@ individuals = {individ: [file for file in os.listdir(os.path.join(config['path']
 forb = {"M5","F5", "F3"}
 
 males = [x for x in individuals if "M" in x and x not in forb]
-females = [x for x in individuals if "F6" in x and x not in forb]
+females = [x for x in individuals if "F" in x and x not in forb]
 shuffle(males)
 shuffle(females)
-test = sorted([(i, j) for i in males for j in females])
+test = [("M6", "F6")]
 pool = males + females
 print(test)
 exit()
