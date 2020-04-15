@@ -1,22 +1,22 @@
 import json
 import os
 from random import shuffle
-from torchvision import transforms
+
 from dataloader import CremaD
 from main import run
 
 with open('config.json', 'r') as f:
     config = json.load(f)
+forbidden = {}
 
 unique_individuals = list(
-    set([file.split(".")[0] for file in os.listdir(os.path.join(config['path'], config['video']))]))
-individuals = {individ: [file for file in os.listdir(os.path.join(config['path'], config['video'])) if
-                         individ in file.split(".")[0]]
+    set([file.split(".")[0] for file in os.listdir(os.path.join(config['path'], config['audio']))]))
+individuals = {individ: [file for file in os.listdir(os.path.join(config['path'], config['audio'])) if
+                         individ in file.split(".")[0] not in forbidden and file.split(".")[2][0] not in forbidden]
                for individ in unique_individuals}
-forb = {"M5","F5", "F3"}
 
-males = [x for x in individuals if "M" in x and x not in forb]
-females = [x for x in individuals if "F" in x and x not in forb]
+males = [x for x in individuals if "M" in x and x not in forbidden]
+females = [x for x in individuals if "F" in x and x not in forbidden]
 shuffle(males)
 shuffle(females)
 test = [("M6", "F6")]

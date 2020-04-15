@@ -18,13 +18,16 @@ class Trainer:
     def train_epoch(self, epoch, total_epoch):
         running_loss = []
         accuracy = []
-        for idx, (video, audio, kinect, label) in enumerate(self.train_dataloader, 0):
+        for idx, (input1, input2, label) in enumerate(self.train_dataloader, 0):
             self.optimizer.zero_grad()
-            output = self.network(audio.to(self.device), video.float().to(self.device), kinect.float().to(self.device))
-            loss = self.criterion(output, label.to(self.device))
-            predictions = torch.argmax(output, dim=1)
+            video_1, audio_1, kinect_1 = input1
+            video_2, audio_2, kinect_2 = input2
+
+            output = self.network((video_1.to(self.device).float(), audio_1.to(self.device).float(), kinect_1.to(self.device).float()),
+                                  (video_2.to(self.device).float(), audio_2.to(self.device).float(), kinect_2.to(self.device).float()))
+            loss = self.criterion(output, label.to(self.device).float())
             accuracy.append(
-                sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / (predictions.shape[0]))
+                sum([1 for i in range(output.shape[0]) if output[i] == label[i]]) / (output.shape[0]))
             loss.backward()
             self.optimizer.step()
             running_loss.append(loss.item())
@@ -36,9 +39,13 @@ class Trainer:
         running_eval_loss = []
         self.network.eval()
         accuracy = []
-        for idx, (video, audio, kinect, label) in enumerate(self.eval_dataloader, 0):
-            output = self.network(audio.to(self.device), video.float().to(self.device), kinect.float().to(self.device))
-            loss = self.criterion(output, label.to(self.device))
+        for idx, (input1, input2, label) in enumerate(self.train_dataloader, 0):
+            video_1, audio_1, kinect_1 = input1
+            video_2, audio_2, kinect_2 = input2
+            output = self.network(
+                (video_1.to(self.device).float(), audio_1.to(self.device).float(), kinect_1.to(self.device).float()),
+                (video_2.to(self.device).float(), audio_2.to(self.device).float(), kinect_2.to(self.device).float()))
+            loss = self.criterion(output, label.to(self.device).float())
             self.confusion.update(output, label)
             predictions = torch.argmax(output, dim=1)
             accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / \

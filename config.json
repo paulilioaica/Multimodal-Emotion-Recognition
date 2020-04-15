@@ -6,7 +6,7 @@
   "train_size": 0.8,
   "dev_size" : 0.2,
   "epochs": 120,
-  "batch_size": 20,
+  "batch_size": 1,
   "video":"videos",
   "audio":"audio",
   "kinect": "motion capture",

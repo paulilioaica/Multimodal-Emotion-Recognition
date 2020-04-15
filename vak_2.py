@@ -71,20 +71,31 @@ class Classifier(nn.Module):
         self.lstm = LSTM()
         self.audio = Audio()
         self.kinect = Kinect()
-        self.linear = nn.Linear(in_features=768, out_features=7)
+        self.linear = nn.Linear(in_features=768, out_features=1)
 
-    def forward(self, audio, video_arr, motion_arr):
-        if torch.cuda.is_available():
-            h = torch.rand((video_arr.shape[0], self.lstm.hidden_size)).cuda()
-            c = torch.rand((video_arr.shape[0], self.lstm.hidden_size)).cuda()
-        else:
-            h = torch.rand((video_arr.shape[0], self.lstm.hidden_size))
-            c = torch.rand((video_arr.shape[0], self.lstm.hidden_size))
+    def forward_single(self, audio, video_arr, motion_arr, h, c):
         audio = self.audio(audio)
         for i in range(motion_arr.shape[1]):
             video_seq = self.video(video_arr[:, int(i / 2), :, :])
             kinect_seq = self.kinect(motion_arr[:, i, :, :].transpose(1, 3))
             x = torch.cat([audio, video_seq, kinect_seq], dim=1)
             h, c = self.lstm(x, (h, c))
-        x = self.linear(h)
-        return x
+        return h
+
+    def forward(self, input1, input2):
+        video_arr_1, audio_1, motion_arr_1 = input1
+        video_arr_2, audio_2, motion_arr_2 = input2
+
+        if torch.cuda.is_available():
+            h = torch.rand((video_arr_2.shape[0], self.lstm.hidden_size)).cuda()
+            c = torch.rand((video_arr_2.shape[0], self.lstm.hidden_size)).cuda()
+        else:
+            h = torch.rand((video_arr_2.shape[0], self.lstm.hidden_size))
+            c = torch.rand((video_arr_2.shape[0], self.lstm.hidden_size))
+
+        out1 = self.forward_single(audio_1, video_arr_1, motion_arr_1, h, c)
+        out2 = self.forward_single(audio_2, video_arr_2, motion_arr_2, h, c)
+
+        dis = torch.abs(out1 - out2)
+        dis = self.linear(dis)
+        return F.sigmoid(dis)

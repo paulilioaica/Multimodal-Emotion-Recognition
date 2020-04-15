@@ -10,7 +10,7 @@ import random
 
 
 class CremaD(Dataset):
-    def __init__(self, root_dir, audio_dir, video_dir, kinect_dir,k_fold_list, transforms=None):
+    def __init__(self, root_dir, audio_dir, video_dir, kinect_dir, k_fold_list, transforms=None):
         self.audio_dir = audio_dir
         self.video_dir = video_dir
         self.kinect_dir = kinect_dir
@@ -20,17 +20,15 @@ class CremaD(Dataset):
         self.eval_indx = {}
         assert os.path.exists(os.path.join(self.root_dir, self.video_dir)), "Path to videos cannot be found"
         assert os.path.exists(os.path.join(self.root_dir, self.audio_dir)), "Path to audio files cannot be found"
-        self.videos = sorted(
-            [os.path.join(self.root_dir, self.video_dir, file) for file in self.k_fold_list if file.endswith(".npz")])
-        self.audio = sorted(
-            [os.path.join(self.root_dir, self.audio_dir, file.split("_")[0] + ".npz") for file in self.k_fold_list if
-             file.endswith(".npz")])
-        self.kinect = sorted(
-            [os.path.join(self.root_dir, self.kinect_dir, file.split("_")[0] + ".npz") for file in self.k_fold_list if
-             file.endswith(".npz")])
+        self.num_classes = 7
+        self.classes = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+        for element in k_fold_list:
+            label = int(element.split(".")[2])
+            self.classes[label].append(element)
+        print(self.classes[0])
 
     def __len__(self):
-        return len(self.videos)
+        return len(self.classes[0])
 
     def modify(self, image, seed):
         random.seed(seed)
@@ -57,12 +55,35 @@ class CremaD(Dataset):
         return video_ret
 
     def __getitem__(self, item):
+
+        if item % 2 == 1:
+            label = 1
+            index = random.randint(0, self.num_classes - 1)
+            first_sample = random.choice(self.classes[index])
+            second_sample = random.choice(self.classes[index])
+
+        else:
+            label = 0
+            index_first = random.randint(0, self.num_classes - 1)
+            index_second = random.randint(0, self.num_classes - 1)
+            while index_first == index_second:
+                index_second = random.randint(0, self.num_classes - 1)
+            first_sample = random.choice(self.classes[index_first])
+            second_sample = random.choice(self.classes[index_second])
+
         seed = np.random.randint(2147483647)
-        video = np.load(self.videos[item])['arr_0']
-        audio = np.load(self.audio[item])['arr_0'][:, 0]
-        kinect = np.load(self.kinect[item])['arr_0']
-        spectrogram = librosa.feature.melspectrogram(audio)
-        audio = np.array(Image.fromarray(spectrogram).resize((100,150), Image.ANTIALIAS))[np.newaxis, :]
-        label = int(self.videos[item].split('_')[0][-1])
-        video = self.transform(video, seed)
-        return video, audio, kinect, label
+        video_first = np.load(os.path.join(self.root_dir, self.video_dir, first_sample).split(".npz")[0] + "_0.npz")['arr_0']
+        audio_first = np.load(os.path.join(self.root_dir, self.audio_dir, first_sample))['arr_0'][:, 0]
+        kinect_first = np.load(os.path.join(self.root_dir,self.kinect_dir, first_sample))['arr_0']
+        spectrogram = librosa.feature.melspectrogram(audio_first)
+        audio_first = np.array(Image.fromarray(spectrogram).resize((100, 150), Image.ANTIALIAS))[np.newaxis, :]
+        video_first = self.transform(video_first, seed)
+
+        seed = np.random.randint(2147483647)
+        video_second = np.load(os.path.join(self.root_dir, self.video_dir, second_sample).split(".npz")[0] + "_0.npz")['arr_0']
+        audio_second = np.load(os.path.join(self.root_dir, self.audio_dir, second_sample))['arr_0'][:, 0]
+        kinect_second = np.load(os.path.join(self.root_dir, self.kinect_dir,second_sample))['arr_0']
+        spectrogram = librosa.feature.melspectrogram(audio_second)
+        audio_second = np.array(Image.fromarray(spectrogram).resize((100, 150), Image.ANTIALIAS))[np.newaxis, :]
+        video_second = self.transform(video_second, seed)
+        return (video_first, audio_first, kinect_first), (video_second, audio_second, kinect_second), label
