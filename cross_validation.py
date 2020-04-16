@@ -2,7 +2,9 @@ import json
 import os
 from random import shuffle
 
-from dataloader import CremaD
+from dataloader import FG2020
+from dataloader_test import FG2020_Test
+
 from main import run
 
 with open('config.json', 'r') as f:
@@ -31,9 +33,9 @@ for i, duo in enumerate(test):
     test = sum([individuals[x] for x in duo], [])
     aux = [x for x in pool if x not in duo]
     train = sum([individuals[x] for x in aux], [])
-    train_dataset = CremaD(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=train,
+    train_dataset = FG2020(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=train,
                            transforms=True)
-    val_dataset = CremaD(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=test)
+    val_dataset = FG2020_Test(config['path'], config['audio'], config['video'], config['kinect'], k_fold_list=test)
     train_acc, train_loss, val_acc, val_loss = run(config, train_dataset, val_dataset)
     bucket_accuracy.append([train_acc, train_loss, val_acc, val_loss])
     print(

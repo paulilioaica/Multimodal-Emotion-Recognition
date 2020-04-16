@@ -1,3 +1,6 @@
+
+
+
 import torch.nn.functional as F
 import torch
 import torch.nn as nn
@@ -7,7 +10,7 @@ from torchvision.models import resnet18
 class LSTM(nn.Module):
     def __init__(self):
         super().__init__()
-        self.hidden_size = 768
+        self.hidden_size = 512
         self.gru = nn.LSTMCell(input_size=1152, hidden_size=self.hidden_size)
 
     def forward(self, x, h):
@@ -71,13 +74,13 @@ class Classifier(nn.Module):
         self.lstm = LSTM()
         self.audio = Audio()
         self.kinect = Kinect()
-        self.linear = nn.Linear(in_features=768, out_features=1)
+        self.linear = nn.Linear(in_features=512, out_features=1)
 
     def forward_single(self, audio, video_arr, motion_arr, h, c):
         audio = self.audio(audio)
         for i in range(motion_arr.shape[1]):
-            video_seq = self.video(video_arr[:, int(i / 2), :, :])
-            kinect_seq = self.kinect(motion_arr[:, i, :, :].transpose(1, 3))
+            video_seq = self.video(video_arr[:, int(i / 2), :,:,:])
+            kinect_seq = self.kinect(motion_arr[:, i, :, :])
             x = torch.cat([audio, video_seq, kinect_seq], dim=1)
             h, c = self.lstm(x, (h, c))
         return h
@@ -95,7 +98,6 @@ class Classifier(nn.Module):
 
         out1 = self.forward_single(audio_1, video_arr_1, motion_arr_1, h, c)
         out2 = self.forward_single(audio_2, video_arr_2, motion_arr_2, h, c)
+        return out1, out2
 
-        dis = torch.abs(out1 - out2)
-        dis = self.linear(dis)
-        return F.sigmoid(dis)
+

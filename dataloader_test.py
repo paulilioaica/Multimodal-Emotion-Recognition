@@ -9,7 +9,7 @@ from PIL import Image
 import random
 
 
-class FG2020(Dataset):
+class FG2020_Test(Dataset):
     def __init__(self, root_dir, audio_dir, video_dir, kinect_dir, k_fold_list, transforms=None):
         self.audio_dir = audio_dir
         self.video_dir = video_dir
@@ -28,7 +28,7 @@ class FG2020(Dataset):
         print(self.classes[0])
 
     def __len__(self):
-        return 800
+        return 200
 
     def modify(self, image, seed):
         random.seed(seed)
@@ -56,48 +56,16 @@ class FG2020(Dataset):
 
     def __getitem__(self, item):
 
-        if item % 2 == 1:
-            label = 0
-            index = random.randint(0, self.num_classes - 1)
-            first_sample = random.choice(self.classes[index])
-            second_sample = random.choice(self.classes[index])
-
-        else:
-            label = 1
-            index_first = random.randint(0, self.num_classes - 1)
-            index_second = random.randint(0, self.num_classes - 1)
-            while index_first == index_second:
-                index_second = random.randint(0, self.num_classes - 1)
-            first_sample = random.choice(self.classes[index_first])
-            second_sample = random.choice(self.classes[index_second])
+        index = random.randint(0, self.num_classes - 1)
+        label = index
+        first_sample = random.choice(self.classes[index])
 
         seed = np.random.randint(2147483647)
-        video_first = np.load(os.path.join(self.root_dir, self.video_dir, first_sample).split(".npz")[0] + "_0.npz")[
-            'arr_0']
+        video_first = np.load(os.path.join(self.root_dir, self.video_dir, first_sample).split(".npz")[0] + "_0.npz")['arr_0']
         audio_first = np.load(os.path.join(self.root_dir, self.audio_dir, first_sample))['arr_0'][:, 0]
-        kinect_first = np.load(os.path.join(self.root_dir, self.kinect_dir, first_sample))['arr_0']
+        kinect_first = np.load(os.path.join(self.root_dir,self.kinect_dir, first_sample))['arr_0']
         spectrogram = librosa.feature.melspectrogram(audio_first)
         audio_first = np.array(Image.fromarray(spectrogram).resize((100, 150), Image.ANTIALIAS))[np.newaxis, :]
         video_first = self.transform(video_first, seed)
 
-        seed = np.random.randint(2147483647)
-        video_second = np.load(os.path.join(self.root_dir, self.video_dir, second_sample).split(".npz")[0] + "_0.npz")[
-            'arr_0']
-        audio_second = np.load(os.path.join(self.root_dir, self.audio_dir, second_sample))['arr_0'][:, 0]
-        kinect_second = np.load(os.path.join(self.root_dir, self.kinect_dir, second_sample))['arr_0']
-        spectrogram = librosa.feature.melspectrogram(audio_second)
-        audio_second = np.array(Image.fromarray(spectrogram).resize((100, 150), Image.ANTIALIAS))[np.newaxis, :]
-        video_second = self.transform(video_second, seed)
-        return (video_first, audio_first, kinect_first), (video_second, audio_second, kinect_second), label
-
-    def get_support(self):
-        support = []
-        for index in range(self.num_classes):
-            first_sample = random.choice(self.classes[index])
-            video_first = np.load(os.path.join(self.root_dir, self.video_dir, first_sample).split(".npz")[0] + "_0.npz")['arr_0']
-            audio_first = np.load(os.path.join(self.root_dir, self.audio_dir, first_sample))['arr_0'][:, 0]
-            kinect_first = np.load(os.path.join(self.root_dir, self.kinect_dir, first_sample))['arr_0']
-            spectrogram = librosa.feature.melspectrogram(audio_first)
-            audio_first = np.array(Image.fromarray(spectrogram).resize((100, 150), Image.ANTIALIAS))[np.newaxis, :]
-            support.append((video_first, audio_first, kinect_first, index))
-        return support
+        return (video_first, audio_first, kinect_first), label
