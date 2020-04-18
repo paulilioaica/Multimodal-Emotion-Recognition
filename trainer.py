@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from analytics import Confusion
+from sklearn import svm
 
 
 class Trainer:
@@ -16,12 +17,14 @@ class Trainer:
         self.optimizer = optimizer
 
     def train_epoch(self, epoch, total_epoch):
+        SVM = svm.SVC(kernel="linear", C=0.001)
         running_loss = []
         accuracy = []
         for idx, (video, audio, kinect, label) in enumerate(self.train_dataloader, 0):
             self.optimizer.zero_grad()
             output = self.network(audio.to(self.device), video.float().to(self.device), kinect.float().to(self.device))
-            loss = self.criterion(output, label.to(self.device))
+            loss = self.criterion(output, label)
+            print(loss.item())
             predictions = torch.argmax(output, dim=1)
             accuracy.append(
                 sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / (predictions.shape[0]))
