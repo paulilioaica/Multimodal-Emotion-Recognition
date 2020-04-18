@@ -10,7 +10,7 @@ import random
 
 
 class FG2020(Dataset):
-    def __init__(self, root_dir, audio_dir, video_dir, kinect_dir,k_fold_list, transforms=None):
+    def __init__(self, root_dir, audio_dir, video_dir, kinect_dir, k_fold_list, transforms=None):
         self.audio_dir = audio_dir
         self.video_dir = video_dir
         self.kinect_dir = kinect_dir
@@ -28,6 +28,7 @@ class FG2020(Dataset):
         self.kinect = sorted(
             [os.path.join(self.root_dir, self.kinect_dir, file.split("_")[0] + ".npz") for file in self.k_fold_list if
              file.endswith(".npz")])
+
     def __len__(self):
         return len(self.videos)
 
@@ -57,46 +58,23 @@ class FG2020(Dataset):
 
     def __getitem__(self, item):
         seed = np.random.randint(2147483647)
+        num_segments = 8
         video = np.load(self.videos[item])['arr_0']
         audio = np.load(self.audio[item])['arr_0'][:, 0]
         kinect = np.load(self.kinect[item])['arr_0']
         spectrogram = librosa.feature.melspectrogram(audio)
-        audio = np.array(Image.fromarray(spectrogram).resize((100,150), Image.ANTIALIAS))[np.newaxis, :]
+        video_step = video.shape[1] // num_segments
+        kinect_step = kinect.shape[1] // num_segments
+        video_idx = []
+        kinect_idx = []
+        for i in range(0, video.shape[1] - video_step, video_step):
+            video_idx.append(np.random.uniform(i, i + video_step))
+        for i in range(0, kinect.shape[1] - kinect_step, kinect_step):
+            kinect_idx.append(np.random.uniform(i, i + kinect_step))
+
+        video = video[video_idx]
+        kinect = kinect[kinect_idx]
+        audio = np.array(Image.fromarray(spectrogram).resize((100, 150), Image.ANTIALIAS))[np.newaxis, :]
         label = int(self.videos[item].split('_')[0][-1])
         video = self.transform(video, seed)
         return video, audio, kinect, label
-
-
-
-
-
-
-
-
-
-
-
-
-    #
-    # def __getitem__(self, item):
-    #     seed = np.random.randint(2147483647)
-    #     num_segments = 8
-    #     video = np.load(self.videos[item])['arr_0']
-    #     audio = np.load(self.audio[item])['arr_0'][:, 0]
-    #     kinect = np.load(self.kinect[item])['arr_0']
-    #     spectrogram = librosa.feature.melspectrogram(audio)
-    #     video_step = video.shape[1]//num_segments
-    #     kinect_step = kinect.shape[1]//num_segments
-    #     video_idx = []
-    #     kinect_idx = []
-    #     for i in range(0, video.shape[1]-video_step, video_step):
-    #         video_idx.append(np.random.uniform(i, i+video_step))
-    #     for i in range(0, kinect.shape[1]-kinect_step, kinect_step):
-    #         kinect_idx.append(np.random.uniform(i, i+kinect_step))
-    #
-    #     video = video[video_idx]
-    #     kinect = kinect[kinect_idx]
-    #     audio = np.array(Image.fromarray(spectrogram).resize((100,150), Image.ANTIALIAS))[np.newaxis, :]
-    #     label = int(self.videos[item].split('_')[0][-1])
-    #     video = self.transform(video, seed)
-    #     return video, audio, kinect, label
