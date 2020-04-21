@@ -1,4 +1,4 @@
-from vak_2 import Classifier
+from vak_3 import Classifier
 import torch
 from trainer import Trainer
 from torch.utils.data import DataLoader
