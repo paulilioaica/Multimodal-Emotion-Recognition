@@ -9,7 +9,7 @@ def run(config, train_dataset, val_dataset):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = Classifier().to(device)
     print("Training on {}, batch_size is {}, lr is {}".format(device, config['batch_size'], config['lr']))
-    criterion = torch.nn.MultiLabelMarginLoss()
+    criterion = torch.nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=config['lr'], weight_decay=0.5)
 
     train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True)

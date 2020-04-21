@@ -7,7 +7,7 @@ from torchvision.models import resnet18
 class LSTM(nn.Module):
     def __init__(self):
         super().__init__()
-        self.hidden_size = 256
+        self.hidden_size = 64
         self.gru = nn.GRUCell(input_size=1152, hidden_size=self.hidden_size)
 
     def forward(self, x, h):
@@ -71,15 +71,16 @@ class Classifier(nn.Module):
         self.lstm = LSTM()
         self.audio = Audio()
         self.kinect = Kinect()
-        self.linear = nn.Linear(in_features=256, out_features=7)
+        self.linear = nn.Linear(in_features=64, out_features=7)
 
-    def forward(self, audio, video_arr, motion_arr):
+    def forward(self, audio_arr, video_arr, motion_arr):
         if torch.cuda.is_available():
             h = torch.rand((video_arr.shape[0], self.lstm.hidden_size)).cuda()
         else:
             h = torch.rand((video_arr.shape[0], self.lstm.hidden_size))
-        audio = self.audio(audio)
         for i in range(motion_arr.shape[1]):
+            audio = self.audio(audio_arr[:, i, :, :, :])
+            print(audio.shape)
             video_seq = self.video(video_arr[:, i, :, :, :])
             kinect_seq = self.kinect(motion_arr[:, i, :, :, :].transpose(1, 3))
             x = torch.cat([audio, video_seq, kinect_seq], dim=1)

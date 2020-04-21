@@ -39,7 +39,6 @@ class Trainer:
         for idx, (video, audio, kinect, label) in enumerate(self.eval_dataloader, 0):
             output = self.network(audio.to(self.device), video.float().to(self.device), kinect.float().to(self.device))
             loss = self.criterion(output, label.to(self.device))
-            self.confusion.update(output, label)
             predictions = torch.argmax(output, dim=1)
             accuracy.append(sum([1 for i in range(predictions.shape[0]) if predictions[i] == label[i]]) / \
                             (predictions.shape[0]))
