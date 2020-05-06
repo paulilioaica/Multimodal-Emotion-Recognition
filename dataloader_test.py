@@ -9,7 +9,7 @@ from PIL import Image
 import random
 
 
-class FG2020(Dataset):
+class FG2020_test(Dataset):
     def __init__(self, root_dir, audio_dir, video_dir, kinect_dir, k_fold_list, transforms=None):
         self.audio_dir = audio_dir
         self.video_dir = video_dir
@@ -26,7 +26,6 @@ class FG2020(Dataset):
             [os.path.join(self.root_dir, self.audio_dir, file) for file in self.k_fold_list if file.endswith(".npz")])
         self.kinect = sorted(
             [os.path.join(self.root_dir, self.kinect_dir, file) for file in self.k_fold_list if file.endswith(".npz")])
-
 
     def __len__(self):
         return len(self.videos)
@@ -61,15 +60,14 @@ class FG2020(Dataset):
         video = np.load(self.videos[item])['arr_0']
         audio = np.load(self.audio[item])['arr_0'][:, 0]
         kinect = np.load(self.kinect[item])['arr_0']
-        video_step = video.shape[0] // num_segments
-        kinect_step = kinect.shape[0] // num_segments
         video_idx = []
         kinect_idx = []
-        for i in range(0, num_segments*video_step, video_step):
-            indx = int(np.random.uniform(i, i + video_step - 1))
+        audio_slices = []
+        for i in np.linspace(0, video.shape[0]-1, num_segments):
+            indx = int(i)
             video_idx.append(indx)
-        for i in range(0, num_segments*kinect_step, kinect_step):
-            indx = int(np.random.uniform(i, i + kinect_step - 1))
+        for i in np.linspace(0, kinect.shape[0]-1, num_segments):
+            indx = int(i)
             kinect_idx.append(indx)
 
         spectrogram = librosa.feature.melspectrogram(audio)
