@@ -1,6 +1,6 @@
 # Multimodal Emotion Recognition
 
-The aim of this project is to classify 7 emotions within the EMO dataset provided by FG2020 conference.
+The aim of this project is to classify 7 emotions (Neutral state, Sadness, Surprise, Fear, Anger, Disgust, Happiness) within the EMO dataset provided by FG2020 conference.
 
 #### The dataset
 
