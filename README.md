@@ -3,7 +3,7 @@
 The aim of this project is to classify 7 emotions (Neutral state, Sadness, Surprise, Fear, Anger, Disgust, Happiness) within the EMO dataset provided by FG2020 conference.
 
 #### The dataset
-
+Example of actors saying one phrase in all the 7 emotions
 <img src="./pics/1.png"  width="150" height="150"> <img src="./pics/2.png"  width="150" height="150">
 
 
