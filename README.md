@@ -4,8 +4,7 @@ The aim of this project is to classify 7 emotions within the EMO dataset provide
 
 #### The dataset
 
-<img src="./pics/1.png"  width="150" height="150">
-<img src="./pics/2.png"  width="150" height="150">
+<img src="./pics/1.png"  width="150" height="150"> <img src="./pics/2.png"  width="150" height="150">
 
 
 
@@ -26,7 +25,7 @@ Given the small dataset, we implied 2 types of augmentation:
 
 ### Models
 There are 6 models, the best performing one (VAK 6) is detailed in the picture below
-<img src="/pics/vak_final.png"  width="500" height="500">
+<img src="/pics/vak_final.png"  width="2600" height="1300">
  
 
 ### Results
