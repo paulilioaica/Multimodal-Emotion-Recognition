@@ -16,11 +16,13 @@ individuals = {individ: [file for file in os.listdir(os.path.join(config['path']
                for individ in unique_individuals}
 forb = {"M5","F5", "F3"}
 
+
 males = [x for x in individuals if "M" in x and x not in forb]
 females = [x for x in individuals if "F" in x and x not in forb]
 shuffle(males)
 shuffle(females)
-test = [("M6", "F6")]
+
+
 pool = males + females
 total_size = len(individuals)
 global_acc = []
@@ -41,14 +43,3 @@ for i, duo in enumerate(test):
         "Tested on bucket number {}\n loss:\ntrain {}\ntest{} \n acc:\ntrain {}\ntest{}".format(i, train_loss, val_loss,
                                                                                                 train_acc, val_acc))
 
-#
-#
-# plt.title("Loss")
-# plt.plot(x, train_loss)
-# plt.plot(x, val_loss)
-# plt.show()
-#
-# plt.title("Acuratetea")
-# plt.plot(x, train_acc)
-# plt.plot(x, val_acc)
-# plt.show()
