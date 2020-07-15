@@ -36,4 +36,4 @@ Where accuracy per class is
 
 | Model name  | Neutral state  | Sadness | Surprise | Fear | Anger | Disgust | Happiness | 
 |---|---|---|---|---|---|---|---|
-| 89.2 % | 46.4 % | 42.8 %| 57.1 % | 71.4 % | 32.1 %| 53.5 % | 
+|VAK 6 | 89.2 % | 46.4 % | 42.8 %| 57.1 % | 71.4 % | 32.1 %| 53.5 % | 
