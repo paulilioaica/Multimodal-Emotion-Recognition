@@ -13,8 +13,7 @@ The aim of this project is to classify 7 emotions within the EMO dataset provide
 Given the small dataset, we implied 2 types of augmentation:
 * Geometric augmentation on frames
 
-<img src="/pics/normal.png"  width="150" height="150">
-<img src="/pics/mirror.png"  width="150" height="150">
+<img src="/pics/normal.png"  width="150" height="150"> <img src="/pics/mirror.png"  width="150" height="150">
 <img src="/pics/perspective.png"  width="150" height="150">
 <img src="/pics/rotate.png"  width="150" height="150">
 <img src="/pics/rotate+perspective.png"  width="150" height="150">
@@ -25,7 +24,7 @@ Given the small dataset, we implied 2 types of augmentation:
 
 ### Models
 There are 6 models, the best performing one (VAK 6) is detailed in the picture below
-<img src="/pics/vak_final.png"  width="1300" height="2600">
+<img src="/pics/vak_final.png"  width="680" height="320">
  
 
 ### Results
