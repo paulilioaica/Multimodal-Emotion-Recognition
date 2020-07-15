@@ -20,7 +20,7 @@ Given the small dataset, we implied 2 types of augmentation:
 
 * Normalizing the sequence in N segments and drawing a frame from each segment with a normal distribution on that segment
 
-<img src="/pics/aug.png"  width="150" height="150">
+<img src="/pics/aug.png"  width="300" height="150">
 
 ### Models
 There are 6 models, the best performing one (VAK 6) is detailed in the picture below
